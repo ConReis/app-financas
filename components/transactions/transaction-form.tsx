@@ -70,6 +70,13 @@ export function TransactionForm({ transaction, onSuccess, onCancel }: Transactio
     setLoading(true);
     const supabase = createClient();
 
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      setError("Sessão expirada. Faça login novamente.");
+      setLoading(false);
+      return;
+    }
+
     const payload = { description, amount: parsedAmount, date, type, category };
 
     if (isEdit) {
@@ -83,7 +90,9 @@ export function TransactionForm({ transaction, onSuccess, onCancel }: Transactio
         return;
       }
     } else {
-      const { error: dbError } = await supabase.from("transactions").insert(payload);
+      const { error: dbError } = await supabase
+        .from("transactions")
+        .insert({ ...payload, user_id: user.id });
       if (dbError) {
         setError(friendlyError(dbError.message));
         setLoading(false);
