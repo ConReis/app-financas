@@ -1,5 +1,5 @@
 -- FinançasPessoais App - Supabase Schema
--- Execute este SQL no Supabase SQL Editor
+-- Pode ser executado múltiplas vezes sem erro (idempotente)
 
 -- Tabela de transações
 create table if not exists public.transactions (
@@ -18,6 +18,12 @@ create table if not exists public.transactions (
 
 -- Row Level Security
 alter table public.transactions enable row level security;
+
+-- Remove políticas antigas antes de recriar (evita erro "already exists")
+drop policy if exists "Usuários veem suas transações" on public.transactions;
+drop policy if exists "Usuários criam suas transações" on public.transactions;
+drop policy if exists "Usuários editam suas transações" on public.transactions;
+drop policy if exists "Usuários excluem suas transações" on public.transactions;
 
 -- Políticas RLS: cada usuário só vê/edita suas próprias transações
 create policy "Usuários veem suas transações"
