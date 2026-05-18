@@ -1,0 +1,13 @@
+# Arquivos excluídos do deploy na Vercel
+
+# Documentação de banco de dados (não vai para o servidor)
+supabase-schema.sql
+
+# Arquivos de configuração de desenvolvimento
+AGENTS.md
+CLAUDE.md
+
+# Testes (se adicionados futuramente)
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts

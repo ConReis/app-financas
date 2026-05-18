@@ -1,55 +1,124 @@
 # FinançasPessoais App
 
-App de gestão financeira pessoal construído com Next.js 16, Supabase e shadcn/ui.
+App de gestão financeira pessoal — Next.js 16, Supabase, Tailwind CSS v4 e Recharts.
 
-## Setup em 5 passos
+---
 
-### 1. Configure o Supabase
+## Deploy na Vercel (produção)
 
-1. Acesse [supabase.com](https://supabase.com) e crie um projeto
-2. No SQL Editor, execute o arquivo `supabase-schema.sql`
-3. Copie a **Project URL** e a **anon key** em Settings → API
+### 1. Conecte o repositório
+
+1. Acesse [vercel.com](https://vercel.com) e faça login
+2. Clique em **Add New → Project**
+3. Importe o repositório `ConReis/app-financas` do GitHub
+4. A Vercel detecta Next.js automaticamente — **não altere nada**
 
 ### 2. Configure as variáveis de ambiente
 
-Edite o arquivo `.env.local`:
+Na tela de import (ou depois em **Settings → Environment Variables**), adicione:
 
-```env
-NEXT_PUBLIC_SUPABASE_URL=https://SEU-PROJETO.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=SUA-ANON-KEY
-```
+| Nome | Valor | Onde obter |
+|------|-------|-----------|
+| `NEXT_PUBLIC_SUPABASE_URL` | `https://xxxx.supabase.co` | Supabase → Settings → API → Project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `sb_publishable_...` | Supabase → Settings → API → anon key |
 
-### 3. Instale as dependências e rode
+> **Segurança:** As chaves `NEXT_PUBLIC_*` são variáveis públicas do Supabase (anon/publishable key),
+> projetadas para uso no browser e protegidas pelas políticas RLS do banco de dados.
+> A `service_role key` (que bypassa RLS) **nunca** é usada neste projeto.
+
+### 3. Deploy
+
+Clique em **Deploy**. A Vercel vai:
+- Instalar dependências
+- Rodar `npm run build`
+- Publicar em `https://seu-projeto.vercel.app`
+
+Deploys futuros acontecem **automaticamente** a cada push na branch `master`.
+
+### 4. Configure o Supabase para produção
+
+No painel do Supabase → **Authentication → URL Configuration**:
+
+- **Site URL**: `https://seu-projeto.vercel.app`
+- **Redirect URLs**: adicione `https://seu-projeto.vercel.app/auth/callback`
+
+---
+
+## Desenvolvimento local
+
+### Pré-requisitos
+
+- Node.js 20+
+- Conta no [Supabase](https://supabase.com)
+
+### Setup
 
 ```bash
+# 1. Clone o repositório
+git clone https://github.com/ConReis/app-financas.git
+cd app-financas
+
+# 2. Instale as dependências
 npm install
+
+# 3. Configure as variáveis de ambiente
+cp env.template .env.local
+# Edite .env.local com suas credenciais do Supabase
+
+# 4. Crie a tabela no Supabase
+# Execute o conteúdo de supabase-schema.sql no SQL Editor do Supabase
+
+# 5. Rode o app
 npm run dev
 ```
 
-Acesse: http://localhost:3000
+Acesse [http://localhost:3000](http://localhost:3000).
 
-### 4. Deploy na Vercel
+---
 
-1. Faça push para o GitHub
-2. Importe no [vercel.com](https://vercel.com)
-3. Adicione as variáveis de ambiente no painel da Vercel
-4. Deploy automático!
+## Estrutura do projeto
 
-## Funcionalidades
+```
+app/
+├── page.tsx                    # Landing page
+├── auth/
+│   ├── login/page.tsx          # Login
+│   ├── register/page.tsx       # Cadastro + aviso de confirmação de e-mail
+│   └── callback/route.ts       # Handler do link de confirmação
+└── (dashboard)/
+    ├── layout.tsx              # Layout autenticado com sidebar
+    ├── dashboard/page.tsx      # Dashboard com cards e gráfico
+    └── transactions/page.tsx   # CRUD de transações
 
-- **Landing Page** — Apresentação do app com preview do dashboard
-- **Autenticação** — Login e cadastro com Supabase Auth
-- **Dashboard** — Cards de resumo (receitas, despesas, saldo) + gráfico de pizza por categoria
-- **Transações** — CRUD completo com filtros por mês/ano/categoria/tipo e busca
-- **Exportar CSV** — Exporte as transações filtradas para planilha
-- **Responsivo** — Funciona no celular e desktop
+components/
+├── ui/                         # Button, Card, Dialog, Select, Toast, ThemeToggle...
+├── layout/sidebar.tsx          # Sidebar responsiva + toggle dark mode
+├── dashboard/dashboard-client.tsx   # Cards + gráfico de pizza (Recharts)
+└── transactions/
+    ├── transactions-client.tsx # Tabela + filtros + exportar CSV
+    └── transaction-form.tsx    # Formulário de criação/edição
+
+lib/
+├── supabase/
+│   ├── client.ts               # Cliente Supabase (browser)
+│   └── server.ts               # Cliente Supabase (servidor, usa cookies)
+├── types.ts                    # Tipos TypeScript + categorias
+└── utils.ts                    # cn(), formatCurrency(), formatDate(), downloadCSV()
+
+proxy.ts                        # Proteção de rotas (Next.js 16)
+supabase-schema.sql             # Schema SQL com RLS
+env.template                    # Template de variáveis de ambiente
+```
+
+---
 
 ## Stack
 
-- **Next.js 16** (App Router)
-- **TypeScript**
-- **Tailwind CSS v4**
-- **shadcn/ui** (componentes manuais)
-- **Recharts** (gráficos)
-- **Supabase** (auth + banco de dados PostgreSQL + RLS)
-- **Vercel** (deploy)
+| Tecnologia | Versão | Função |
+|-----------|--------|--------|
+| Next.js | 16 | Framework fullstack (App Router) |
+| TypeScript | 5 | Tipagem estática |
+| Tailwind CSS | 4 | Estilização |
+| Supabase | 2 | Auth + PostgreSQL + RLS |
+| Recharts | 3 | Gráfico de pizza no dashboard |
+| Vercel | — | Deploy e hospedagem |
