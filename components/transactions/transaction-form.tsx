@@ -1,6 +1,18 @@
 "use client";
 
 import { useState } from "react";
+
+function friendlyError(msg: string): string {
+  if (msg.includes("relation") && msg.includes("does not exist"))
+    return "Tabela não encontrada. Execute o SQL do arquivo supabase-schema.sql no painel do Supabase.";
+  if (msg.includes("JWT") || msg.includes("not authenticated"))
+    return "Sessão expirada. Faça login novamente.";
+  if (msg.includes("violates row-level security"))
+    return "Permissão negada. Verifique as políticas RLS no Supabase.";
+  if (msg.includes("violates check constraint"))
+    return "Valor inválido para um dos campos.";
+  return `Erro: ${msg}`;
+}
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -66,14 +78,14 @@ export function TransactionForm({ transaction, onSuccess, onCancel }: Transactio
         .update(payload)
         .eq("id", transaction.id);
       if (dbError) {
-        setError("Erro ao atualizar transação.");
+        setError(friendlyError(dbError.message));
         setLoading(false);
         return;
       }
     } else {
       const { error: dbError } = await supabase.from("transactions").insert(payload);
       if (dbError) {
-        setError("Erro ao salvar transação.");
+        setError(friendlyError(dbError.message));
         setLoading(false);
         return;
       }
