@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { DollarSign, Eye, EyeOff, Loader2, CheckCircle2 } from "lucide-react";
+import { DollarSign, Eye, EyeOff, Loader2, Mail, RefreshCw } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,12 +10,12 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function RegisterPage() {
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
@@ -46,36 +45,103 @@ export default function RegisterPage() {
     });
 
     if (authError) {
-      setError(authError.message === "User already registered"
-        ? "Este e-mail já está cadastrado."
-        : "Erro ao criar conta. Tente novamente."
+      setError(
+        authError.message === "User already registered"
+          ? "Este e-mail já está cadastrado."
+          : "Erro ao criar conta. Tente novamente."
       );
       setLoading(false);
       return;
     }
 
-    setSuccess(true);
     setLoading(false);
+    setSuccess(true);
+  }
 
-    // Auto login after register and redirect
-    setTimeout(() => {
-      router.push("/dashboard");
-      router.refresh();
-    }, 1500);
+  async function handleResend() {
+    setResending(true);
+    const supabase = createClient();
+    await supabase.auth.resend({
+      type: "signup",
+      email,
+      options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+    });
+    setResending(false);
   }
 
   if (success) {
     return (
       <div className="min-h-screen bg-secondary/20 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md text-center">
-          <CardContent className="pt-8 pb-8">
-            <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
-              <CheckCircle2 className="w-8 h-8 text-green-600" />
+        <div className="w-full max-w-md">
+          <Link href="/" className="flex items-center gap-2 justify-center mb-8">
+            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
+              <DollarSign className="w-5 h-5 text-white" />
             </div>
-            <h2 className="text-xl font-semibold mb-2">Conta criada com sucesso!</h2>
-            <p className="text-muted-foreground text-sm">Redirecionando para o dashboard...</p>
-          </CardContent>
-        </Card>
+            <span className="font-bold text-xl">FinançasPessoais</span>
+          </Link>
+
+          <Card>
+            <CardContent className="pt-8 pb-8 text-center">
+              {/* Ícone de e-mail */}
+              <div className="w-20 h-20 rounded-full bg-blue-50 dark:bg-blue-950 flex items-center justify-center mx-auto mb-6">
+                <Mail className="w-10 h-10 text-blue-600 dark:text-blue-400" />
+              </div>
+
+              <h2 className="text-2xl font-bold mb-2">Confirme seu e-mail</h2>
+              <p className="text-muted-foreground mb-1">
+                Enviamos um link de confirmação para:
+              </p>
+              <p className="font-semibold text-foreground mb-6 break-all">{email}</p>
+
+              {/* Passos */}
+              <div className="text-left bg-secondary/50 rounded-xl p-4 mb-6 space-y-3">
+                {[
+                  "Abra seu e-mail (verifique também a pasta de spam)",
+                  'Clique no botão "Confirmar e-mail"',
+                  "Você será redirecionado para o app automaticamente",
+                ].map((step, i) => (
+                  <div key={i} className="flex items-start gap-3">
+                    <span className="w-6 h-6 rounded-full bg-primary text-white text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
+                      {i + 1}
+                    </span>
+                    <p className="text-sm text-muted-foreground">{step}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Reenviar */}
+              <p className="text-sm text-muted-foreground mb-3">
+                Não recebeu o e-mail?
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleResend}
+                disabled={resending}
+                className="mb-6"
+              >
+                {resending ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />
+                    Reenviando...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
+                    Reenviar e-mail de confirmação
+                  </>
+                )}
+              </Button>
+
+              <div className="text-sm text-muted-foreground">
+                Já confirmou?{" "}
+                <Link href="/auth/login" className="text-primary font-medium hover:underline">
+                  Fazer login
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }

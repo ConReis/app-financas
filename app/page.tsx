@@ -9,6 +9,7 @@ import {
   DollarSign,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 const features = [
   {
@@ -58,6 +59,7 @@ export default function LandingPage() {
             <span className="font-bold text-lg">FinançasPessoais</span>
           </div>
           <div className="flex items-center gap-3">
+            <ThemeToggle />
             <Button variant="ghost" asChild>
               <Link href="/auth/login">Entrar</Link>
             </Button>

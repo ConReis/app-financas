@@ -8,6 +8,7 @@ import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -66,9 +67,10 @@ export function Sidebar({ user }: SidebarProps) {
       </nav>
 
       {/* User / Logout */}
-      <div className="p-4 border-t">
-        <div className="mb-3 px-3">
-          <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+      <div className="p-4 border-t space-y-2">
+        <div className="flex items-center justify-between px-1 mb-1">
+          <p className="text-xs text-muted-foreground truncate flex-1">{user.email}</p>
+          <ThemeToggle className="shrink-0 ml-2" />
         </div>
         <Button
           variant="ghost"
