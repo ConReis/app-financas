@@ -65,6 +65,7 @@ export function TransactionsClient({ transactions: initialTransactions }: Transa
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | undefined>();
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [formKey, setFormKey] = useState(0);
 
   const filtered = useMemo(() => {
     return transactions.filter((t) => {
@@ -131,11 +132,13 @@ export function TransactionsClient({ transactions: initialTransactions }: Transa
 
   function openNew() {
     setEditingTransaction(undefined);
+    setFormKey((k) => k + 1);
     setDialogOpen(true);
   }
 
   function openEdit(t: Transaction) {
     setEditingTransaction(t);
+    setFormKey((k) => k + 1);
     setDialogOpen(true);
   }
 
@@ -173,6 +176,7 @@ export function TransactionsClient({ transactions: initialTransactions }: Transa
               </Button>
             </DialogTrigger>
             <TransactionForm
+              key={formKey}
               transaction={editingTransaction}
               onSuccess={handleFormSuccess}
               onCancel={() => setDialogOpen(false)}
@@ -343,6 +347,7 @@ export function TransactionsClient({ transactions: initialTransactions }: Transa
                             </DialogTrigger>
                             {editingTransaction?.id === t.id && (
                               <TransactionForm
+                                key={formKey}
                                 transaction={editingTransaction}
                                 onSuccess={handleFormSuccess}
                                 onCancel={() => setDialogOpen(false)}
